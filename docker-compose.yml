@@ -1,0 +1,59 @@
+# using docker-compose.yml to create two seperate containers
+# and docker will automatically put these two container in the same network,
+# so that they can communicate with each other 
+# e.g. one container with MongoDB and another container with Node backend
+# in your node backend, simply put your container name as an link to that server
+
+
+version: '3'
+services:
+  mongo:
+    container_name: my_mongodb
+    image: 'mongo'
+    # build the redis-server container using redis image
+
+    restart: unless-stopped # always restart unless we stop the container in the command line
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    
+
+  node:
+    container_name: my_node_app
+    restart: always
+    # always restart the node server if it crashed; can select from  "no",on-failure,unless-stopped; if "no", has to put " " as no is an boolean in yml file
+
+    build: .
+    # build node-app image using the Dockerfile at current directory
+
+    ports:
+      - "80:80"
+    # mapping ports 3000 in the localhost to 8081 in the container
+
+
+# notes:
+# run "docker-compose up" to execute this file and run the images
+# run "docker-compose up --build" if made some changes and want to rebuild 
+# run "docker-compose down" to shut down all the containers
+# run "docker-compose up --build --remove-orphans"
+
+# bash into container
+# docker exec -it container_name bash
+
+# set up mongodb
+# first bash into mongodb as show above, then
+# run "use admin" to switch to 'admin' database;
+# run "db.auth('root','root')" to login as root user or whatever password you setup above
+# run "use myapp" to swtich/create a new databse
+# run below to create a new role for 'myapp' database
+
+# db.createUser({
+#     user: 'demo',
+#     pwd: 'demo password',
+#     roles: [{ role: 'readWrite', db:'myapp'}]
+# })
+
+
+# in your node app, use 'mongodb://demo:demo@mongo:27017/myapp' to connect to that database
